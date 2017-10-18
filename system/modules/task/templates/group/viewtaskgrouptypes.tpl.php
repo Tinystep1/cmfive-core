@@ -5,7 +5,8 @@
     </div>
     <div class="tab-body">
         <div id="dashboard">
-            <?php echo $dashboard; ?>
+            <?php echo Html::filter('Filter TaskGroups', $filter_data, "/task-group/viewtaskgrouptypes#dashboard", 'GET');
+                echo Html::paginatedTable($table_header, $table_data, $page, $page_size, $total_results, "/task-group/viewtaskgrouptypes#dashboard", !empty($sort) ? $sort : null, !empty($sort_direction) ? $sort_direction : null, "viewtaskgrouptypes__page", "viewtaskgrouptypes__page-size", "total_results", "viewtaskgrouptypes__sort", "viewtaskgrouptypes__sort-direction"); ?>
         </div>
         <div id="create" class="clearfix">
             <?php echo $creategroup; ?>

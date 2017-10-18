@@ -229,8 +229,51 @@ class TaskService extends DbService {
     }
 
     // get all active task groups from the database
-    function getTaskGroups() {
-        return $this->getObjects("TaskGroup", array("is_active" => 1, "is_deleted" => 0));
+    function getTaskGroups($include_inactive = false, $type = null, $page = null, $page_size = null, $sort = null, $sort_direction = null) {
+        $query = $this->db->get('task_group')
+                ->leftJoin("user on task_group.default_assignee_id = user.id");
+
+        $query->paginate($page, $page_size);
+
+        if (!is_null($sort)) {
+            $sort_dir = 'asc';
+            if (!is_null($sort_direction) && $sort_direction === 'desc') {
+                $sort_dir = 'desc';
+            }
+            
+            // Special cases for sorting on other object properties
+            if ($sort === 'default_assignee') {
+                $sort = 'user.first_name';
+            }
+            
+            $query->sort($sort, $sort_dir);
+        }
+
+        $query->where("task_group.is_deleted", 0);
+        
+        if (!$include_inactive) {
+            $query->where("task_group.is_active", 1);
+        }
+
+        if (!empty($type)) {
+            $query->where("task_group.task_group_type", $type);
+        }
+
+        $query->select()->select("task_group.*");
+        return $this->getObjectsFromRows("TaskGroup", $query->fetch_all());
+    }
+
+    // count taskgroups
+    function countTaskGroups($include_inactive = false, $type = null) {
+
+        $where = ["is_deleted" => 0];
+        if (!$include_inactive) {
+            $where["is_active"] = 1;
+        }
+        if (!empty($type)) {
+            $where["task_group_type"] = $type;
+        }
+        return $this->w->db->get("task_group")->where($where)->count();
     }
 
     // get all task groups from the database of given task group type

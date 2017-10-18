@@ -16,7 +16,7 @@ function viewmembergroup_GET(Web $w) {
 	}
 
 	// put the group title into the page heading
-	$w->Task->navigation($w, "Task Group - " . $taskgroup->title);
+	$w->Task->navigation($w, "Task Group - " . $taskgroup->title . ($taskgroup->is_active ? "" : " NOT ACTIVE"));
 
 	History::add("Task Group: " . $taskgroup->title, null, $taskgroup);
 

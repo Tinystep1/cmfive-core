@@ -200,4 +200,40 @@ class TaskGroup extends DbObject {
     public function isOwner(User $user) {
         return null != $this->getObject("TaskGroupMember", array("task_group_id" => $this->id, "is_active" => 1, "user_id" => $user->id, "role" => "OWNER"));
     }
+
+    public function canSetActive(User $user = null) {
+        if ($this->Auth->user()->is_admin == 1) {
+            return true;
+        }
+        
+        return $this->isOwner($user);
+    }
+
+    /**
+    * sets the taskgroup active flag and sets flag on all taskgroup tasks
+    * @param $active bool
+    */
+    public function setActive($active) {
+        if ($active == $this->is_active) {
+            return;
+        }
+        //check if taskgroup can be set
+        $this->w->Log->info('test !!!!!!!! calling hook');
+        
+        $results = $this->w->callHook('Task', 'ValidateTaskgroupSetActive', $data = ['taskgroup' => $this, 'active' => $active]);
+        if (in_array(false, $results)) {
+            return;
+        }
+        var_dump($results); die;
+        $this->is_active = $active;
+        $this->update();
+        $tasks = $this->getTasks();
+        if (!empty($tasks)) {
+            foreach ($tasks as $task) {
+                $task->setActive(false);
+            }
+        }
+    }
+
+
 }

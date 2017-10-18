@@ -26,6 +26,7 @@ class Task extends DbObject {
     public $is_deleted;  // is_deleted flag
     public $_modifiable;  // Modifiable Aspect
     public $_searchable;
+    public $is_active;
     public $rate; //rate used for calculating invoice values
     public static $_validation = array(
         "title" => array('required'),
@@ -717,6 +718,17 @@ END:VEVENT
 END:VCALENDAR";
         
         return $ical;
+    }
+
+    /**
+    * sets task is_active
+    */
+    function setActive($active) {
+        if ($this->is_active == $active) {
+            return;
+        }
+        $this->is_active = $active;
+        $this->update();
     }
     
 }
