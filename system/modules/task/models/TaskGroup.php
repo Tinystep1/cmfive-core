@@ -221,10 +221,10 @@ class TaskGroup extends DbObject {
         $this->w->Log->info('test !!!!!!!! calling hook');
         
         $results = $this->w->callHook('Task', 'ValidateTaskgroupSetActive', $data = ['taskgroup' => $this, 'active' => $active]);
-        if (in_array(false, $results)) {
+        if (!empty($results) && in_array(false, $results)) {
             return;
         }
-        var_dump($results); die;
+        //var_dump($results); die;
         $this->is_active = $active;
         $this->update();
         $tasks = $this->getTasks();
