@@ -79,7 +79,7 @@ function listtasks(\Web $w, $params = array()) {
     }
     
     // Standard wheres
-    $query_object->where("task.is_deleted", array(0, null))->where("task_group.is_active", 1)->where("task_group.is_deleted", 0);
+    $query_object->where("task.is_deleted", array(0, null))->where("task_group.is_active", 1)->where("task_group.is_deleted", 0)->where("task.is_active", 1);
     
     // Fetch dataset and get model objects for them
     $tasks_result_set = $query_object->fetch_all();

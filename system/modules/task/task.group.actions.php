@@ -17,8 +17,7 @@ function viewtaskgroup_GET(Web &$w) {
 	// if is_active is set to '0', display 'Yes', else display 'No'
 	$isactive = $group_details->is_active == "1" ? "Yes" : "No";
 
-	// set Is Task Active, Is Task Deleted dropdowns for display
-	$is_active = array(array("Yes","1"), array("No","0"));
+	// set Is Task Deleted dropdowns for display
 	$is_deleted = array(array("Yes","1"), array("No","0"));
 	
 	// get generic task group permissions
@@ -30,9 +29,9 @@ function viewtaskgroup_GET(Web &$w) {
         $tasktypes = $w->Task->getTaskTypes($group_details->task_group_type);
         $priorities = $w->Task->getTaskPriority($group_details->task_group_type);
         $assignees = $w->Task->getMembersInGroup($p['id']);
-        array_unshift($assignees,array("Unassigned","unassigned")); 
+        array_unshift($assignees,array("Unassigned",0)); 
         // No default assignee means it is unassigned
-        $default_assignee = (empty($group_details->default_assignee_id)) ? "unassigned" : $group_details->default_assignee_id;
+        $default_assignee = (empty($group_details->default_assignee_id)) ? 0 : $group_details->default_assignee_id;
 	
 	// build form displaying current attributes from database
 	$f = Html::form(array(
@@ -42,7 +41,7 @@ function viewtaskgroup_GET(Web &$w) {
 			array("Who Can Assign", "select", "can_assign", $group_details->can_assign, $arrassign),
 			array("Who Can View", "select", "can_view", $group_details->can_view, $w->Task->getTaskGroupPermissions()),
 			array("Who Can Create", "select", "can_create", $group_details->can_create, $w->Task->getTaskGroupPermissions()),
-			array("Is Active", "select", "is_active", $group_details->is_active, $is_active),
+			array("Is Active", "checkbox", "set_is_active", $group_details->is_active),
 			array("Description", "textarea", "description", $group_details->description, "26", "6"),
 			array("Default Task Type", "select", "default_task_type", $group_details->default_task_type, $tasktypes),
 			array("Default Priority", "select", "default_priority", $group_details->default_priority, $priorities),
@@ -64,7 +63,7 @@ function createtaskgroup_POST(Web &$w) {
         $w->request('can_assign'),
         $w->request('can_view'),
         $w->request('can_create'),
-        $w->request('is_active'),
+        true, //set is_active to true
         $w->request('is_deleted'),
         $w->request('default_task_type'),
         $w->request('default_priority'),
@@ -82,14 +81,26 @@ function updatetaskgroup_POST(Web &$w) {
 
 	// if group exists, update the details
 	if ($group_details) {
+		//check if is_active is changing
+		$update_is_active = false;
+		$set_is_active = !empty($w->request('set_is_active'));
+		if ($group_details->is_active != $set_is_active) {
+			$update_is_active = true;
+		}
+
 		$group_details->fill($_REQUEST);
 		$group_details->is_automatic_subscription = !empty($w->request('is_automatic_subscription'));
 		$response = $group_details->update();
 
-                // Check the validation
-                if ($response !== true) {
-                    $w->errorMessage($group_details, "Taskgroup", $response, true, "/task-group/viewmembergroup/".$p['id']."#members");
-                }                
+        // Check the validation
+        if ($response !== true) {
+            $w->errorMessage($group_details, "Taskgroup", $response, true, "/task-group/viewmembergroup/".$p['id']."#members");
+        }   
+
+        //update the active flag if needed
+        if ($update_is_active) {
+        	$group_details->setActive($set_is_active);
+        }             
 
 		// if a default assignee is set (other than unassigned), return their membership object for this group
                 $default_assignee_id = $_REQUEST['default_assignee_id'];

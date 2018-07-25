@@ -668,7 +668,8 @@ class Html {
                         case "checkbox":
                             $defaultValue = !empty($field[4]) ? $field[4] : null;
                             $cb_class = !empty($field[5]) ? $field[5] : null;
-                            $buffer .= Html::checkbox($name, $value, $defaultValue, $cb_class);
+                            $required_attribute = !empty($field[6]) ? $field[6] : null;
+                            $buffer .= Html::checkbox($name, $value, $defaultValue, $cb_class, $required_attribute);
                         break;
                         case "radio":
                             $group = !empty($field[4]) ? $field[4] : null;

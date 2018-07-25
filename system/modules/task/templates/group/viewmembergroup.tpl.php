@@ -9,7 +9,6 @@
 			<?php echo Html::box('/task-group/addgroupmembers/' . $taskgroup->id, 'Add New Members', true); ?>
 			<?php echo Html::box($webroot . '/task-group/viewtaskgroup/' . $taskgroup->id, 'Edit Task Group', true); ?>
 			<?php echo Html::box($webroot . '/task-group/deletetaskgroup/' . $taskgroup->id, 'Delete Task Group', true); ?>
-			<?php echo Html::b('/task-group/setActive/' . $taskgroup->id . '?active=' . ($taskgroup->is_active ? 0 : 1), $taskgroup->is_active ? "Deactivate" : "Activate") ?>
 			<?php echo $viewmembers; ?>
 
 			<h4>Active Tasks</h4>

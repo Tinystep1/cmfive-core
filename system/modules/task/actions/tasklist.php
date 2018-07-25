@@ -20,6 +20,7 @@ function tasklist_ALL(Web $w) {
         $dt_from = $w->sessionOrRequest('task__dt-from');
         $dt_to = $w->sessionOrRequest('task__dt-to');
 		$filter_urgent = $w->sessionOrRequest('task__filter-urgent', false);
+        $filter_active = $w->sessionOrRequest('task__filter-active', 'active_only');
     }
 	
 	// First get the taskgroup
@@ -82,6 +83,23 @@ function tasklist_ALL(Web $w) {
     // Standard wheres
     $query_object->where("task.is_deleted", array(0, null)); //->where("task_group.is_active", 1)->where("task_group.is_deleted", 0);
 
+    // set active where
+    if (!empty($filter_active)) {
+        switch ($filter_active) {
+            case 'active_only':
+                $query_object->where("task.is_active", 1);
+                break;
+            case 'inactive_only':
+                $query_object->where("task.is_active", 0);
+                break;
+            case 'both';
+                break;
+            default:
+                $query_object->where("task.is_active", 1);
+                break;
+        }
+    }
+
 	// Fetch dataset and get model objects for them
     $tasks_result_set = $query_object->orderBy('task.id DESC')->fetch_all();
     $task_objects = $w->Task->getObjectsFromRows("Task", $tasks_result_set);
@@ -134,7 +152,16 @@ function tasklist_ALL(Web $w) {
 			["label" => "No", "value" => '0'],
 			["label" => "Yes", "value" => '1'],
 			["label" => "Both", "value" => '']
-		])->setSelectedOption($is_closed) //array("Closed", "checkbox", "task__is-closed", !empty($is_closed) ? $is_closed : null)
+		])->setSelectedOption($is_closed), //array("Closed", "checkbox", "task__is-closed", !empty($is_closed) ? $is_closed : null)
+        (new \Html\Form\Select([
+            "label" =>  "Active",
+            "name"  =>  "task__filter-active",
+            "id"  =>  "task__filter-active"
+        ]))->setOptions([
+            ["label" => "Active Only", "value" => 'active_only'],
+            ["label" => "Inactive Only", "value" => 'inactive_only'],
+            //["label" => "Both", "value" => 'both']
+        ])->setSelectedOption($filter_active)
     );
     
     $w->ctx("filter_data", $filter_data);

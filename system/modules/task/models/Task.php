@@ -722,7 +722,12 @@ END:VCALENDAR";
         if ($this->is_active == $active) {
             return;
         }
-        $this->is_active = $active;
+        //check taskgroup is active
+        $taskgroup = $this->getTaskGroup();
+        if (!$taskgroup->is_active) {
+            $active = 0;
+        }
+        $this->is_active = $active ? 1 : 0;
         $this->update();
     }
     

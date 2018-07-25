@@ -20,6 +20,10 @@ function viewmembergroup_GET(Web $w) {
 
 	History::add("Task Group: " . $taskgroup->title, null, $taskgroup);
 
+	if (!$taskgroup->is_active) {
+		$w->ctx('error','TaskGroup is INACTIVE');
+	}
+
 	// set columns headings for display of members
 	$line[] = array("Member", "Role", "");
 

@@ -13,6 +13,10 @@ function edit_GET($w) {
     if ($task->is_deleted == 1) {
         $w->error('Task not found',"/task/tasklist/");
     }
+
+    if (!empty($task->id) && !$task->is_active) {
+        $w->redirect('/task/viewinactive/' . $task->id);
+    }
     
     // Register for timelog if not new task
     if (!empty($task->id)) {
@@ -79,8 +83,11 @@ function edit_GET($w) {
                     ->setRequired('required')
             ),
             array(
-                array("Task Title", "text", "title", $task->title),
+                array("Task Title", "text", "title", $task->title)
+            ),
+            array(
                 array("Status", "select", "status", $task->status, $task->getTaskGroupStatus()),
+                array("Active", "checkbox", "set_is_active", $task->id ? $task->is_active : 1, null, null, $taskgroup->is_active ? "" : "disabled")
             ),
             array(
                 array("Priority", "select", "priority", $task->priority, $priority),
@@ -186,6 +193,16 @@ function edit_POST($w) {
     if (!empty($p["id"])) {
         $taskdata = $w->Task->getTaskData($p['id']);
     }
+    // if new task set is active to 1
+    if (empty($p['id'])) {
+        $task->is_active = 1;
+    }
+    //check if active flag is changing
+    $update_active = false;
+    $form_is_active = !empty($_POST['edit']['set_is_active']) ? 1 : 0;
+    if ($task->is_active != $form_is_active) {
+        $update_active = true;
+    }
     
     $task->fill($_POST['edit']);
 	if (empty($task->dt_assigned) || $task->assignee_id != intval($_POST['edit']['assignee_id'])) {
@@ -246,6 +263,11 @@ function edit_POST($w) {
 				$tdata->insert();
 			}
         }
+    }
+
+    //update active flag if required befor sending notification
+    if ($update_active) {
+        $task->setActive($form_is_active);
     }
     
 	

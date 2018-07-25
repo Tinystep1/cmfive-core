@@ -217,18 +217,23 @@ class TaskGroup extends DbObject {
         if ($active == $this->is_active) {
             return;
         }
-        //check if taskgroup can be set
-        $this->w->Log->info('test !!!!!!!! calling hook');
+        // check if user has permissions
+        if (!$this->canSetActive()) {
+            return;
+        }
         
+        $this->Log->debug("TASKGROUP CAN I SET ACTIVE");
+        //check if taskgroup can be set
         $results = $this->w->callHook('Task', 'ValidateTaskgroupSetActive', $data = ['taskgroup' => $this, 'active' => $active]);
         if (!empty($results) && in_array(false, $results)) {
             return;
         }
-        //var_dump($results); die;
-        $this->is_active = $active;
+        $this->Log->debug("TASKGROUP SETTING ACTIVE: " . ($active ? "TRUE" : "FALSE"));
+
+        $this->is_active = $active ? 1 : 0;
         $this->update();
         $tasks = $this->getTasks();
-        if (!empty($tasks)) {
+        if (!empty($tasks) && !$active) {
             foreach ($tasks as $task) {
                 $task->setActive(false);
             }
