@@ -9,10 +9,12 @@ function new_GET(Web $w) {
 	if (empty($p['class']) || empty($p['class_id'])) {
 		$w->error("Missing class parameters", $redirect_url);
 	}
-	
+	$types = $w->File->getAttachmentTypes($p['class']); // this is calling the new function that gets attachment types from the config
+	$w->ctx("types",$types);
 	$_form = [
 		'New Attachment' => [
 			[(new \Html\Form\InputField\File())->setName("file")->setId("file")->setAttribute("capture", "camera")], // ["File", "file", "file"]
+			[["Type", "select", "type_code", $types]],
 			[["Title", "text", "title"]],
 			[["Description", "textarea", "description", "",null,null,'justtext']]
 		]

@@ -570,6 +570,30 @@ class FileService extends DbService {
 	}
 
 	/**
+	 * find attachment typ codes from the config file for the
+	 * class name
+	 *
+	 * @param mixed $classnameOrObject either an object or a classname as string
+	 * @return array in the form of [title => code, ..]
+	 */
+	function getAttachmentTypes($classnameOrObject) {
+		if (empty($classnameOrObject)) {
+			return null;
+		}
+		$className = null;
+		if (is_object($classnameOrObject)) {
+			$className = get_class($classnameOrObject);
+		} elseif (is_string($classnameOrObject)) {
+			$className = $classnameOrObject;
+		}
+		if (empty($className)) {
+			return null;
+		}
+		// look up the attachment types for this class name from the config
+		return Config::get("AttachmentTypes.".$className);
+	}
+
+	/**
 	 * Render a template showing an attachment
 	 * 
 	 * @param DbObject $object
