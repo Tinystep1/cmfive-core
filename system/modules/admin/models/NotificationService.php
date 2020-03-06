@@ -45,10 +45,14 @@ class NotificationService extends DbService {
 				
 				case NotificationService::TYPE_EMAIL:
 				default:
-					$this->w->Mail->sendMail($recipient_user->getContact()->email, 
-						($recipient_user->is_external || empty($sending_user->id)) ? Config::get('main.company_support_email') : $sending_user->getContact()->email,
-						$subject, $output, null, null, $attachments
-					);
+					// define FROM email address: 
+					// -> each module can define a module specific email address, or
+					// -> use the global company support email address
+					// It's important to use the same email domain so it 
+					// works with email service providers like Amazon's SES which
+					// validate email by the sender domain.
+					$from_email = Config::get($module.'.notification_email') ?? Config::get('main.company_support_email');
+					$this->w->Mail->sendMail($recipient_user->getContact()->email,$from_email,$subject, $output, null, null, $attachments);
 					break;
 			}
 		}
